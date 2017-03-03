@@ -1,0 +1,30 @@
+XRAYSIM-SAMPLE 0.99
+
+# This is the default datafile, sample.xrs, which is loaded when XRaySim starts
+# Use it as a template for other sample files
+
+# KEYS/VALUES
+> width=0.05 
+> height=0.05 
+> depth=0.05 
+> voxsize=0.0025
+> lambda=1.5405e-8
+
+# GRAIN LIST BEGINS HERE:
+#------------------------------------------------------------------- 
+#omega	chi	phi	a		graintype (FCC, BCC, or SC)
+#------------------------------------------------------------------- 
+
+0	0	0	5.6402e-8 	FCC
+25	16	2	5.6402e-8 	FCC
+13	24	15	5.6402e-8 	FCC
+45	0	0	5.6402e-8 	FCC
+45	45	0	5.6402e-8 	FCC
+45	45	45	5.6402e-8 	FCC
+45	45	45	5.6402e-8 	FCC
+45	28	130	5.6402e-8 	FCC
+0	15	274	5.6402e-8 	FCC
+0	0	12	5.6402e-8 	FCC
+15	0	5	5.6402e-8 	FCC
+15	15	300	5.6402e-8 	FCC
+300	1	99	5.6402e-8 	FCC

@@ -1,0 +1,57 @@
+XRAYSIM-SAMPLE 0.99
+
+# A Larger sample, same resolution as the default
+# center grain rotated 90 deg in chi direction
+
+# KEYS/VALUES
+> width  = 0.1 
+> height = 0.1 
+> depth  = 0.1 
+> voxsize= 0.0025
+> lambda = 0.62e-8
+
+# GRAIN LIST BEGINS HERE:
+#------------------------------------------------------------------- 
+#omega	chi	phi	a		graintype (FCC, BCC, or SC)
+#------------------------------------------------------------------- 
+
+0	90	0	4.05e-8 	FCC
+25	16	2	4.05e-8 	FCC
+13	24	15	4.05e-8 	FCC
+45	0	0	4.05e-8 	FCC
+45	45	0	4.05e-8 	FCC
+45	45	45	4.05e-8 	FCC
+45	45	45	4.05e-8 	FCC
+45	28	130	4.05e-8 	FCC
+0	15	274	4.05e-8 	FCC
+0	0	12	4.05e-8 	FCC
+15	0	5	4.05e-8 	FCC
+15	15	300	4.05e-8 	FCC
+300	1	99	4.05e-8 	FCC
+0	45	120	4.05e-8 	FCC
+325	24	345	4.05e-8 	FCC
+42	27	0 	4.05e-8 	FCC
+24	35	46	4.05e-8 	FCC
+27	83  	94	4.05e-8 	FCC
+25	36 	46	4.05e-8 	FCC
+234	215	10	4.05e-8 	FCC
+18	162	130	4.05e-8 	FCC
+0	47	287	4.05e-8 	FCC
+0	15	12	4.05e-8 	FCC
+15	51	51	4.05e-8 	FCC
+34	143	234	4.05e-8 	FCC
+355	23	85 	4.05e-8 	FCC
+0	85	0	4.05e-8 	FCC
+865	156	54	4.05e-8 	FCC
+345	45	143	4.05e-8 	FCC
+23	74	112	4.05e-8 	FCC
+237	145	14	4.05e-8 	FCC
+23	277	82	4.05e-8 	FCC
+111	111	111	4.05e-8 	FCC
+123	321	234	4.05e-8 	FCC
+46 	75	345	4.05e-8 	FCC
+72	350	245	4.05e-8 	FCC
+18	234	333	4.05e-8 	FCC
+321	145	257	4.05e-8 	FCC
+156	23	0 	4.05e-8 	FCC
+

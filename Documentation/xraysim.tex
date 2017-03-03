@@ -1,0 +1,512 @@
+\documentclass{article}
+\begin{document}
+
+	\pagestyle{plain}
+
+	\title{XRaySim Documentation}
+	\author{Karl Kosack (kosack@andrew.cmu.edu)}
+	\maketitle
+
+	\tableofcontents
+	\newpage
+
+\section{Introduction}
+
+XRaySim is a computer program which simulates x-ray diffraction
+through a polycrystalline material. In particular, it is intended as a
+simulation of a 3D x-ray microscope.  In such a setup, an x-ray beam
+is passed through a crystal sample which is made up of various crystal
+grains of differing orientation. As the beam travels through the
+sample, it is diffracted by the grains, producing a pattern on a 2-d
+detector.  The pattern produced when the sample is rotated in the beam
+can be used to calculate the orientation of an individual grain in the
+sample. 
+
+\section{Technical Info}
+
+\subsection{Overview}
+
+In this simulation, a sample is represented as a set of cubic {\em
+voxels}, or volumetric pixels, which contain information about grain
+position and orientation. Using a ray-tracing technique, the path of
+an x-ray beam through the sample is calculated and diffracted beams
+are sent out when necessary. The size and 3D resolution of the sample
+is only limited by memory size and computation time.  Due to the large
+storage and computation needs of voxel-based visualization (i.e. a
+256x256x256 set of voxels takes around 32Mb of memory assuming each
+only holds 1 character worth of information), it should be noted that
+more complex samples will require substantial free memory.
+
+\subsection{How it works}
+
+XRaySim is a specialized ray tracer which takes into account simply
+x-ray optics.  XRaySim first loads a list of crystal grains from a
+datafile and computes the scattering vectors for each based on their
+structure and orientation. Information describing the sample volume is
+then loaded into memory as a very large array of integers, each an
+index to a grain number.  When a simulated ray is fired from the
+emitter through the sample, the entry point into the sample is
+calculated and all voxels along the path of the ray are tested for
+intersection.  If intersection occurs, the orientation of the grain
+residing at the intersection point is tested against the condition for
+x-ray scattering.  If scattering occurs, a ray is fired from the
+intersected voxel in the correct direction.  If at any time a
+scattered ray intersects the detector, the point that was hit is
+recorded. The sample itself sits on a simulated translation/rotation
+stage so that it can be placed in any arbitrary position and
+orientation.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Usage}
+
+%================================================================
+\subsection{Starting from the Command Line}
+
+Start XRaySim by typing ``xraysim'' at the console command line.
+XRaySim accepts several command-line arguments which are as follows:
+
+	\begin{quote}
+		\begin{description}
+		\item [-t] Text mode - no graphics display
+		\item [-d] Debug mode - output debugging info (highly verbose)
+		\item [-h] Display help info
+		\end{description}
+	\end{quote}
+
+%================================================================
+\subsection{Graphical Interface}
+
+% ADD MORE HERE!
+
+XRaySim provides a relatively easy to use GUI interface to controlling
+the simulation.  When the interface starts, you are presented with
+two windows -- the experiment window, and the detector window.  
+
+
+\subsubsection{Experiment Window}
+
+The Experiment Window allows the user to manipulate the various
+aspects of the simulator and run some preset scans.  The window is
+divided into two panels: the experiment control panel and the display
+control panel.  The former controls aspects of the experiment, and the
+latter controls the display of the experiment and detector windows.
+The experiment window also shows a 3D representation of the experiment
+setup.  The various controls in the ``Display Controls'' panel change
+how this display works.
+
+	\begin{description}
+
+		\item[Omega, Chi, Phi] For each Euler angle, you can specify a
+		starting position (changing which will immediately rotate the
+		sample to the specified position), a step, and a stopping
+		position, all in radians.  The step and stop fields are used
+		by the {\em AutoRotate } scan, mentioned later. The three
+		check boxes next to these fields are for activating or
+		deactivating the ``motors'' which move that particular
+		rotation.  They have no effect unless a scan is running. 
+
+		\item[tx, ty, tz] These fields control the translation of the
+		sample in the x, y, and z directions. 
+
+		\item[Beam] When this button is active, the beam and
+		diffracted beams can be seen in the experiment display.  It is
+		useful for manual manipulation of the simulation.  You do not
+		need to turn the beam on to do an AutoRotate scan, but if you
+		do, you will be able to see the beam during the scan. 
+
+		\item[AutoRotate] Press this button to begin an AutoRotate
+		scan.  The sample will start at the current rotation and
+		rotate in the beam along each activated Euler angle until the stopping
+		angle is hit.
+
+		\item[Fire One] Press this button to fire one ray at the
+		sample.
+
+		\item[Boundary Search] Press this button to begin a grain
+		boundary search. The grain boundary search will automatically
+		map the boundary of the grain that the beam is currently in.
+		To perform this search, you must first rotate the sample so
+		that the beam is causing a Bragg peak to be visible on the
+		detector.  Then, you must select the peak to watch on the
+		detector window by drawing a box around it.  Finally, push the
+		Boundary Search button and the scan will begin from the
+		current starting position.
+
+		\item[Map crystal] Runs an automatic scan to map the central 
+		grain and its neighbors.
+
+		\item[Beam Divergence, Detector Distance] These
+		parameters control the setup of the experiment.  Click them to
+		change.
+
+		\item[Sampling vol min/max] These fields control the size of
+		the sampling volume -- the area inside the sample from which
+		x-rays are to be diffracted.  Min and max are measured from the
+		center of the sample when it is not translated, so if you want
+		to restrict diffraction to the central grain, make sure these
+		boundaries fall within that grain. In reality, such a volume
+		may be restricted by a series of conical slits placed in
+		front of the detector which only allow rays originating from a
+		particular position to pass through.
+		
+
+		\item[Output to:] Choose either ``Display'' or ``Logfile''.
+		For instance, during an AutoRotate scan, if ``Display'' is
+		chosen, the detector window will update to show the position
+		of rays that hit it when the scan is done. If ``log file'' is
+		chosen, detailed information about the position and intensity
+		versus the rotation angle and translation will be written to
+		``scope.log'' so that another program can read and analyze it.
+
+	\end{description}
+
+\bigskip
+
+	\begin{description}
+
+		\item[Display Update] Choose this to continuously update the
+		experiment window during a scan (useful for watching the
+		progress of the scan, but it slows things down a bit). 
+
+		\item[Detector Update] Works the same as the Display Update
+		toggle, but for the detector window.  This tends to slow down
+		the simulation considerably and isn't recommended.
+
+		\item[Sample Reference Frame] Turn this on to place the
+		experiment display in the fixed reference frame of the sample.
+
+		\item[r,theta,psi] Turn these knobs to move the camera
+		position for the experiment window.
+
+		\item[Voxel Display] Choosing a value other than ``None'' will
+		cause the voxels that make up the sample to be displayed in a
+		color-coded fashion.  Only enable this if there are under
+		10000 voxels (otherwise, it is very slow).
+
+	\end{description}
+
+
+
+
+\subsubsection{Detector Window}
+This window shows a graphical representation of the state of the
+detector.  Brighter spots mean more rays have hit that position. If an
+AutoRotate scan is running with the log file option turned on, the
+detector is cleared between each rotation, so it cannot be displayed.
+If you want to see the detector displayed, turn the log off.  You can
+select a spot on the detector by clicking and dragging across the
+detector window surface.  To clear this window, choose
+Detector---Reset from the menu bar in the experiment window.  You can
+also save the current state of the detector from the menubar.
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Programming Info}
+
+%================================================================
+\subsection{Data Structures}
+
+\subsubsection{XRayScope}
+
+The {\em XRayScope} object is the ``core'' of the program and is
+really all that is needed to perform all functions of the simulator.
+Any sort of user interface that is used must create a new XRayScope
+and call its functions, which include:
+
+	\begin{description}
+	
+	\item [loadSample()] load grain information into the simulation
+	and create a new set of voxels for the sample
+	\item [setDetectorDist(dist)]  set the distance between the detector
+	and the sample
+	\item [getDetectorDist()] returns current detector distance
+	\item [setDetectorSize(width,height)] set the physical width and height of
+	the detector
+	\item [setDetectorRes(xres,yres)] set the horizontal and vertical
+	resolution of the detector in pixels
+	\item [setProbeVolumeSize(min, max)] restrict the part of the
+	beam which interacts with the sample. Min and max are relative to
+	the center of the sample.
+	\item [getProbeVolumeMax() and getProbeVolumeMin()] 
+	return the current probe volume max/min value which was set in 
+	setProbeVolumeSize()
+	\item [setBeamDiv(div)] set the divergence of the x-ray beam
+	\item [getBeamDiv()] returns the current beam divergence
+	\item [rotateSample(phi,theta,psi)] rotate sample to the specified
+	Euler angles (in radians)
+	\item [translateSample(tx,ty,tz)] translate the sample
+	\item [activate()] activate the x-ray beam and fire one ray at the
+	sample. 
+	\item [setLogFilename(filename)] set the name of the file where
+	output should be written (default is 'scope.log').
+	\item [writeLogHeader()] Output the current state of the machine
+	to the logfile
+	\item [writeLogEntry()] write a log entry to the logfile 
+	\item [watchDetectorSpot(minx,miny,maxx,maxy)] Returns the
+	integrated intensity of an area of the detector.
+
+	\end{description}
+
+
+For instance, if you wanted to simulate rotating the sample while
+it is in the beam, you would do the following:
+
+\begin{verbatim}
+    
+    XRayScope scope;
+    double i;
+
+    // Set the defaults
+    scope.loadSample("sample.xrs");
+    scope.setDetectorDist(5);
+    scope.setDetectorSize(10,10);
+    scope.setDetectorRes(500,500);
+    
+    // Rotate the sample and fire the beam
+    for(i=0 ; i<2*PI; i+=0.001) {
+            
+        scope.rotateSample(i,0,0);
+        scope.activate();
+
+    }
+
+    // Output the final state of the detector
+    scope.writeLogHeader();					
+    scope.writeLogEntry();
+
+
+\end{verbatim}
+
+Note that {\em writeLogHeader()} and {\em writeLogEntry()} are
+separate functions---this allows for a more flexible data format.
+Whenever {\em writeLogHeader()} is called, a block of text is written to the
+current log file which describes all of the global parameters that are
+in use (e.g. wavelength and detector size).  You only need to write
+this data out once unless you change one of these global parameters
+during a scan.  Whenever {\em writeLogEntry()} dumps a series of lines to
+the current log file, which describe the position of each detector
+spot and the current sample orientation and translation. In the
+example above, the integrated detector information is written, since
+the only one log entry is written after the scan has completed.
+Alternatively, one could call {\em writelogHeader()} at the beginning of the
+scan, and at each step, clear the detector image, fire the beam, and
+call {\em writeLogEntry()} so that detector information will be saved at
+each angle (the default AutoRotate scan works this way, so see the
+code in scans.h for an example).
+
+\subsubsection{Grain}
+A {\em Grain} object stores information about a particular crystal
+grain, including its orientation, its structure, and a list of
+scattering vectors which are precomputed when the Grain is
+created. The method {\em Grain::getDiffraction()} is where the mathematics
+of crystal diffraction is actually carried out. Grains should only be
+created in the {\em XRayScope::loadSample()} method, so there is really no
+need to go into detail about their use here.  For more information,
+look in the xraysim.h file.
+
+
+\subsubsection{Emitter}
+The {\em Emitter} object is a simple data structure which holds the
+current position of the x-ray emitter.  An emitter is created when a
+new XRayScope is made, and its properties are automatically set. 
+
+
+\subsubsection{Detector}
+The {\em Detector} object simulates a two-dimensional photon
+detector. A new Detector is automatically created when an XRayScope is made.  
+The detector records the position of intersected rays in an image
+buffer.  All attributes of the detector should be set through the
+corresponding XRayScope methods (see above). 
+
+\subsubsection{Volume}
+The {\em Volume} object is simply a container structure for a set of
+voxels (defined by the {\em Voxel} object).  In short, a Volume
+represents the entire crystal sample.  
+
+\subsubsection{Voxel}
+The {\em Voxel} object is the storage class for a volumetric pixel
+(three dimensional).  Voxels must be orthogonal to the ``world''
+coordinate axes to speed up intersection testing, so voxels are always
+fixed in space.  Because of this, rotating the sample actually
+involves keeping the sample fixed and rotating the detector and
+emitter about it (although that should be transparent to the user of
+the program, since it is taken care of by the XRayScope object).  Each
+voxel contains a grain index which is the index of the crystal grain
+to which it belongs.
+
+\subsubsection{Ray, Isect, etc.}
+The {\em Ray, Isect}, and related objects are data types used
+throughout the simulation.  A Ray contains information about a single
+ray of light, including its wavelength, intensity, direction, and
+position. The Isect object represents the intersection between a Ray
+and something in the scene (i.e. the detector or sample). 
+
+
+%================================================================
+\subsection{Mathematics}
+
+Most of the mathematics involved in the simulation that relate to
+crystallography can be found in the {\em Grain::getDiffraction()}
+method and in the Grain object constructor, {\em Grain::Grain()}. It
+should be noted that all of the mathematics in this simulation assume
+that the crystal has a {\bf cubic bravais lattice} with a structure of
+FCC, BCC, or SC.
+
+\subsubsection{Scattering vectors}
+In the Grain constructor, a list of scattering vectors ($\vec G_i$) is computed
+using the structure of the crystal and its orientation.  This is done
+by iterating over all acceptable miller indices (following the
+selection rule corresponding to the grain's structure) and using
+Equation \ref{G}.
+
+	\begin{equation} \label{G}
+	\vec{G} = h \vec{B_x} + k \vec{B_y} + l \vec{B_z}
+	\end{equation}
+
+	\begin{center}
+	$\vec{B_i} = M (\frac{2\pi}{a}) \hat i	$ \\
+	\end{center}
+
+Where $M$ is the rotation matrix which describes the orientation of
+the grain, (h,k,l) are Miller indices, $a$ is the lattice constant and
+($\vec B_i$) are the basis vectors.
+
+\subsubsection{Diffraction}
+The {\em getDiffraction()} method returns a list of diffracted rays given an
+incident ray (wave vector $\vec k_i$) and that ray's intersection point.
+The condition for diffraction is shown in Equation \ref{DIFFCOND}.
+
+	\begin{equation} \label{DIFFCOND}
+	G^2 = -2 \vec{k_i} \cdot \vec{G} 
+	\end{equation} 
+
+Where, $G$ is a scattering vector (a list of which is precomputed in
+Grain::Grain). This is implemented by iterating over scattering
+vectors and testing whether $ \vert G^2+2*\vec k_i \cdot \vec G \vert $ is less
+than a tolerance (referred to in the program as the {\em beam
+divergence} because a larger value simulates a wider beam).  The
+diffracted beam ($\vec k_f$) is then found by the formula in Equation \ref{KF}.
+
+	\begin{equation} \label{KF}
+	\vec{k_f} = \vec{k_i} + \vec{G}		
+	\end{equation}
+
+The closer the beam divergence is to 0, the finer the beam will be,
+and the less diffraction will occur.  For instance, to make a
+simulated Laue transmission image, set the beam divergence to
+something high (like 1.0) by calling the {\em XRayScope::setBeamDiv()}
+method and activate the XRayScope.
+
+
+%================================================================
+\subsection{Data Input/Output}
+
+\subsubsection{Input}
+XraySim reads sample information in from a sample datafile.  The
+format of the file is as follows:
+
+\begin{verbatim}
+    
+    XRAYSIM-SAMPLE 0.99
+
+    # This is the default datafile, sample.xrs, which is loaded when XRaySim starts
+    # Use it as a template for other sample files
+
+    # KEYS/VALUES
+    > width=0.05 
+    > height=0.05 
+    > depth=0.05 
+    > voxsize=0.0025
+    > lambda=1.5405e-8
+
+    # GRAIN LIST BEGINS HERE:
+    #------------------------------------------------------------------- 
+    #omega  chi phi a       graintype (FCC, BCC, or SC)
+    #------------------------------------------------------------------- 
+
+    0   0   0   5.6402e-8   FCC
+    25  16  2   5.6402e-8   FCC
+    13  24  15  5.6402e-8   FCC
+    45  0   0   5.6402e-8   FCC
+    45  45  0   5.6402e-8   FCC
+    45  45  45  5.6402e-8   FCC
+    45  45  45  5.6402e-8   FCC
+    45  28  130 5.6402e-8   FCC
+    0   15  274 5.6402e-8   FCC
+    0   0   12  5.6402e-8   FCC
+    15  0   5   5.6402e-8   FCC
+    15  15  300 5.6402e-8   FCC
+    300 1   99  5.6402e-8   FCC
+
+\end{verbatim}
+
+
+The first line is just a file header, and can be ignored.  Any line
+that begins with a '\#' symbol is a comment, and will be ignored when
+the program loads the data. Lines which begin with a '$>$' symbol
+must contain a parameter and a value separated by an '$=$' sign. All
+other lines contain a list of grains which are in the sample.  The
+columns are described in the figure above.  If you don't specify all of
+the parameters listed above, the default values will be used (which
+may cause unexpected results).
+
+\subsubsection{Output}
+
+All XRaySim data is outputted in the following format:
+
+	\begin{list}{-}{}
+		\item Lines beginning with a \# are comments
+		\item Lines beginning with $>$ contain a parameter key/value
+		pair separated by an $=$ sign. (eg: {\em $>$ lambda=1.54e-6})
+		\item All other lines are tab-delimited data with the
+		following columns: ($\omega$  $\chi$  $\phi$  tx  ty  tz dety
+		detz intensity).  The first three are the sample rotation, the
+		second three are the translation, the next two are the
+		detector position, and the last is the number of rays which
+		hit that position
+	\end{list}
+
+
+\subsection{Writing Scans}
+
+	XRaySim has several scans already programmed into it, including
+	{\em AutoRotate} which outputs detector information as the sample
+	rotates about a fixed axis, and several scans for mapping the
+	grain microstructure which assume a probe volume which is smaller
+	than the grain size.  However, it is fairly easy to add new scans
+	(though you need to recompile the program each time, since there
+	is no macro language or plug-in support).  All of the scans are
+	defined in the files {\em scans.c} and {\em scans.h}, and they are
+	simply functions which call XRayScope methods.  Each function
+	assumes that there is a global XRayScope object called {\em
+	scope}, which is constructed in {\em main()}.
+	
+	To add a new scan, simply write a function that does what you
+	want, and then call it either from {\em main()} if you want it to
+	run in text mode, or from the graphical interface if you are more
+	adventurous. The code to draw the graphical interface is in {\em
+	interface.c}. See the FLTk manuals for info on programming it.
+	You will notice that the preset scans also contain some code which
+	is specific to the graphics interface (for button/widget callbacks
+	and OpenGL display).  These are completely optional, and needn't
+	be included in any new scans (unless you want watch an animated
+	view of the scan).
+
+	There is a MS Visual C++ project file which should work for
+	recompiling XRaySim.  Note that the OpenGL and FLTk libraries must
+	be installed.  It is possible to compile XRaySim without OpenGL if
+	needed: remove the OpenGL libraries from the project (by editing
+	the linker settings) and then comment out all lines which say
+	``\#define USE\_OPENGL''.  All OpenGL code in XRaySim is enclosed by
+	{\em \#ifdef}'s which should then instruct the compiler to ignore
+	OpenGL calls. I've never tested this, so it may not work---you may
+	need to edit the header files.
+
+\end{document}
+
+
+
+
+
+
